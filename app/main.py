@@ -1,26 +1,25 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from app.routers import proxy
-from app.config import settings
 
-app = FastAPI(
-    title=settings.app_name,
-    version="1.0.0",
-    description="Production-grade low-latency semantic caching proxy for LLM applications.",
-)
+app = FastAPI(title="LLM Semantic Caching Proxy")
 
-# Enable CORS for frontend clients
+# Enable CORS so your GitHub Pages frontend can talk to this Render backend without restrictions
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allows requests from any frontend (GitHub Pages)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Include API routers
-app.include_router(proxy.router)
+app.include_router(proxy.router, prefix="/api/v1")
 
-# Mount the static web dashboard UI
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+@app.get("/")
+def read_root():
+    return {
+        "status": "online",
+        "message": "LLM Semantic Caching Proxy API is running.",
+    }
