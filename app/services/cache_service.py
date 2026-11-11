@@ -8,8 +8,11 @@ from app.config import settings
 class SemanticCacheService:
 
     def __init__(self):
-        print("Initializing lightweight semantic cache service...")
-        self.vectorizer = TfidfVectorizer(stop_words="english")
+        print("Initializing enhanced semantic cache service...")
+        # Use analyzer='word' with ngram range to capture phrases and variations better
+        self.vectorizer = TfidfVectorizer(
+            stop_words="english", ngram_range=(1, 2), lowercase=True
+        )
         self.cache_store = []  # List of dicts: prompt, response
 
     def process_query(self, user_prompt: str) -> dict:
@@ -18,11 +21,12 @@ class SemanticCacheService:
 
         # 1. Check Cache if items exist
         if self.cache_store:
-            corpus = [item["prompt"] for item in self.cache_store] + [
-                user_prompt
-            ]
             try:
+                corpus = [item["prompt"] for item in self.cache_store] + [
+                    user_prompt
+                ]
                 tfidf_matrix = self.vectorizer.fit_transform(corpus)
+                # Compare the latest prompt (last row) against all previous prompts
                 similarity_matrix = cosine_similarity(
                     tfidf_matrix[-1], tfidf_matrix[:-1]
                 )
@@ -31,6 +35,10 @@ class SemanticCacheService:
                 if len(similarities) > 0:
                     best_match_idx = int(np.argmax(similarities))
                     best_score = float(similarities[best_match_idx])
+
+                    print(
+                        f"Comparing '{user_prompt}' -> Best match: '{self.cache_store[best_match_idx]['prompt']}' | Score: {best_score}"
+                    )
 
                     if best_score >= settings.similarity_threshold:
                         latency_ms = round(
@@ -50,7 +58,7 @@ class SemanticCacheService:
 
         # 2. Cache Miss: Simulate Upstream LLM Processing
         time.sleep(settings.upstream_delay_sec)
-        upstream_response = f"Synthesized LLM response for: '{user_prompt}' (Generated via upstream model execution)"
+        upstream_response = f"AI Response for: '{user_prompt}' (Generated via upstream model execution)"
 
         # 3. Store in cache
         self.cache_store.append(
@@ -70,7 +78,7 @@ class SemanticCacheService:
         return {
             "total_cached_queries": len(self.cache_store),
             "similarity_threshold": settings.similarity_threshold,
-            "model": "TF-IDF Cosine Similarity Engine",
+            "model": "Enhanced TF-IDF Cosine Engine",
         }
 
 
