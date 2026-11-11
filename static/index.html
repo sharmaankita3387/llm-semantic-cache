@@ -41,9 +41,11 @@
     </div>
 
     <script>
+        const BACKEND_URL = "https://llm-semantic-cache-b73p.onrender.com";
+
         async function updateStats() {
             try {
-                const res = await fetch('/api/v1/stats');
+                const res = await fetch(`${BACKEND_URL}/api/v1/stats`);
                 const data = await res.json();
                 document.getElementById('cache-count').innerText = data.total_cached_queries;
             } catch (err) { console.error(err); }
@@ -59,7 +61,7 @@
             btn.innerText = "Processing...";
 
             try {
-                const res = await fetch('/api/v1/generate', {
+                const res = await fetch(`${BACKEND_URL}/api/v1/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt })
