@@ -4,7 +4,7 @@
 
 > **A high-performance semantic caching proxy middleware that intercepts redundant LLM queries, indexes local vector embeddings, and bypasses upstream model execution to eliminate token waste and reduce latency by up to 98%.**
 
-[Live Local Dashboard](http://localhost:8000)
+[Live Dashboard](https://sharmaankita3387.github.io/llm-semantic-cache/)
 
 ---
 
