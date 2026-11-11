@@ -82,7 +82,7 @@ uvicorn app.main:app --reload
 Cache Miss (First Query):
 
 ```bash
-curl -X 'POST' 'http://127.0.0' \
+curl -X 'POST' 'http://127.0.0.1:8000/api/v1/generate' \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "Explain how Dijkstra pathfinding algorithm works."}'
 ```
@@ -90,7 +90,7 @@ curl -X 'POST' 'http://127.0.0' \
 Cache Hit (Semantically Similar Query):
 
 ```bash
-curl -X 'POST' 'http://127.0.0' \
+curl -X 'POST' 'http://127.0.0.1:8000/api/v1/generate' \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "Can you explain how Dijkstra algorithm functions?"}'
 ```
