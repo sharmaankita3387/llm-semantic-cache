@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  semantic-cache:
+    build: .
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - SIMILARITY_THRESHOLD=0.88
