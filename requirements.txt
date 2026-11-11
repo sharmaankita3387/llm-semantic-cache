@@ -1,7 +1,7 @@
 ﻿fastapi
 uvicorn
-sentence-transformers
 numpy
+scikit-learn
 pydantic
 pydantic-settings
 requests

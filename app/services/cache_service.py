@@ -1,41 +1,52 @@
 import time
-import torch
 import numpy as np
-from sentence_transformers import SentenceTransformer, util
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from app.config import settings
 
 
 class SemanticCacheService:
 
     def __init__(self):
-        print(f"Loading embedding model: {settings.embedding_model_name}...")
-        self.model = SentenceTransformer(settings.embedding_model_name)
-        self.cache_store = []  # List of dicts: prompt, embedding, response
+        print("Initializing lightweight semantic cache service...")
+        self.vectorizer = TfidfVectorizer(stop_words="english")
+        self.cache_store = []  # List of dicts: prompt, response
 
     def process_query(self, user_prompt: str) -> dict:
         start_time = time.time()
-        query_embedding = self.model.encode(
-            user_prompt, convert_to_tensor=True
-        )
+        user_prompt = user_prompt.strip()
 
-        # 1. Check Cache
+        # 1. Check Cache if items exist
         if self.cache_store:
-            stored_embeddings = torch.stack(
-                [item["embedding"] for item in self.cache_store]
-            )
-            similarities = util.cos_sim(query_embedding, stored_embeddings)[0]
-            best_match_idx = int(torch.argmax(similarities))
-            best_score = float(similarities[best_match_idx])
+            corpus = [item["prompt"] for item in self.cache_store] + [
+                user_prompt
+            ]
+            try:
+                tfidf_matrix = self.vectorizer.fit_transform(corpus)
+                similarity_matrix = cosine_similarity(
+                    tfidf_matrix[-1], tfidf_matrix[:-1]
+                )
+                similarities = similarity_matrix[0]
 
-            if best_score >= settings.similarity_threshold:
-                latency_ms = round((time.time() - start_time) * 1000, 2)
-                return {
-                    "response": self.cache_store[best_match_idx]["response"],
-                    "cache_hit": True,
-                    "similarity_score": round(best_score, 4),
-                    "latency_ms": latency_ms,
-                    "total_cache_entries": len(self.cache_store),
-                }
+                if len(similarities) > 0:
+                    best_match_idx = int(np.argmax(similarities))
+                    best_score = float(similarities[best_match_idx])
+
+                    if best_score >= settings.similarity_threshold:
+                        latency_ms = round(
+                            (time.time() - start_time) * 1000, 2
+                        )
+                        return {
+                            "response": self.cache_store[best_match_idx][
+                                "response"
+                            ],
+                            "cache_hit": True,
+                            "similarity_score": round(best_score, 4),
+                            "latency_ms": latency_ms,
+                            "total_cache_entries": len(self.cache_store),
+                        }
+            except Exception as e:
+                print(f"Vector calculation error: {e}")
 
         # 2. Cache Miss: Simulate Upstream LLM Processing
         time.sleep(settings.upstream_delay_sec)
@@ -43,11 +54,7 @@ class SemanticCacheService:
 
         # 3. Store in cache
         self.cache_store.append(
-            {
-                "prompt": user_prompt,
-                "embedding": query_embedding,
-                "response": upstream_response,
-            }
+            {"prompt": user_prompt, "response": upstream_response}
         )
 
         latency_ms = round((time.time() - start_time) * 1000, 2)
@@ -63,7 +70,7 @@ class SemanticCacheService:
         return {
             "total_cached_queries": len(self.cache_store),
             "similarity_threshold": settings.similarity_threshold,
-            "model": settings.embedding_model_name,
+            "model": "TF-IDF Cosine Similarity Engine",
         }
 
 
