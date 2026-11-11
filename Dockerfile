@@ -4,11 +4,15 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 
-# Install PyTorch CPU-only wheel first to save massive RAM/space
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+# Upgrade pip, setuptools, and wheel first
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
+# Copy requirements and install using only binary wheels (--only-binary=:all:)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --only-binary=:all: -r requirements.txt || pip install --no-cache-dir -r requirements.txt
+
+# Install PyTorch CPU-only explicitly from the PyTorch wheel index
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
 COPY . .
 
