@@ -57,14 +57,12 @@ llm-semantic-cache/
 
 ## Reproducibility and Quickstart
 
-## Reproducibility and Quickstart
-
 ### 1. Environment Setup
 
 Clone the repository, create a virtual environment, and install dependencies:
 
 ```bash
-git clone [https://github.com/sharmaankita3387/llm-semantic-cache](https://github.com/sharmaankita3387/llm-semantic-cache)
+git clone https://github.com/sharmaankita3387/llm-semantic-cache
 cd llm-semantic-cache
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\Activate.ps1
