@@ -51,7 +51,7 @@ class SemanticCacheService:
                             "cache_hit": True,
                             "similarity_score": round(best_score, 4),
                             "latency_ms": latency_ms,
-                            "total_cache_entries": len(self.cache_store),
+                            "total_cached_queries": len(self.cache_store),
                         }
             except Exception as e:
                 print(f"Vector calculation error: {e}")
@@ -71,7 +71,7 @@ class SemanticCacheService:
             "cache_hit": False,
             "similarity_score": 1.0,
             "latency_ms": latency_ms,
-            "total_cache_entries": len(self.cache_store),
+            "total_cached_queries": len(self.cache_store),
         }
 
     def get_stats(self) -> dict:
